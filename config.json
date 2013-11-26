@@ -1,0 +1,6 @@
+{
+  "pomodoroLength": 25,
+  "audioEnabled": 0,
+  "timeoutSound": "",
+  "workNoise": ""
+}
