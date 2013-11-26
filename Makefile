@@ -1,59 +1,20 @@
-#
 # Makefile for Pymodoro
-#
+
 INSTALL_DIR=/usr/local/bin
+LOCAL_DATA_DIR=~/.config/pymodoro
 
-# Dynamically detect/generate version file as necessary
-# This file will define a variable called VERSION.
-.PHONY: .FORCE-VERSION-FILE
-VERSION-FILE: .FORCE-VERSION-FILE
-        @./GEN-VERSION-FILE
--include VERSION-FILE
-
-# Maybe this will include the version in it.
-todo.sh: VERSION-FILE
-
-# For packaging
-DISTFILES := todo.cfg todo_completion
-
-DISTNAME=todo.txt_cli-$(VERSION)
-dist: $(DISTFILES) todo.sh
-        mkdir -p $(DISTNAME)
-        cp -f $(DISTFILES) $(DISTNAME)/
-        sed -e 's/@DEV_VERSION@/'$(VERSION)'/' todo.sh > $(DISTNAME)/todo.sh
-        tar cf $(DISTNAME).tar $(DISTNAME)/
-        gzip -f -9 $(DISTNAME).tar
-        zip -9r $(DISTNAME).zip $(DISTNAME)/
-        rm -r $(DISTNAME)
-
-.PHONY: clean
-clean:
-        rm -f $(DISTNAME).tar.gz $(DISTNAME).zip
+all: test
 
 install:
-        cp todo.sh $(INSTALL_DIR)/todo
-        chmod a+x $(INSTALL_DIR)/todo
-        cp todo_completion /etc/bash_completion.d/todo
-        mkdir -p ~/.todo
-        cp -n todo.cfg ~/.todo/config 
+	@echo "Installing Pymodoro to $(INSTALL_DIR)..."
+	@sudo cp pymodoro.py $(INSTALL_DIR)/pymodoro
+	@sudo chmod a+x $(INSTALL_DIR)/pymodoro
+	@echo "Configuring user accout in $(LOCAL_DATA_DIR)..."
+	@mkdir -p $(LOCAL_DATA_DIR)
+	@cp -n config.json $(LOCAL_DATA_DIR)/
+	@touch $(LOCAL_DATA_DIR)/history.csv
+	@touch $(LOCAL_DATA_DIR)/fail.csv
+	@touch $(LOCAL_DATA_DIR)/now.csv
 
-#
-# Testing
-#
-TESTS = $(wildcard tests/t[0-9][0-9][0-9][0-9]-*.sh)
-#TEST_OPTIONS=--verbose
-
-test-pre-clean:
-        rm -rf tests/test-results "tests/trash directory"*
-
-aggregate-results: $(TESTS)
-
-$(TESTS): test-pre-clean
-        -cd tests && ./$(notdir $@) $(TEST_OPTIONS)
-
-test: aggregate-results
-        tests/aggregate-results.sh tests/test-results/t*-*
-        rm -rf tests/test-results
-    
-# Force tests to get run every time
-.PHONY: test test-pre-clean aggregate-results $(TESTS)
+test:
+	@behave
