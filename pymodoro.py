@@ -30,11 +30,12 @@ class Persistence:
       out = csv.writer(history_file, delimiter = ',', quoting = csv.QUOTE_ALL)
       out.writerow((what, Persistence.time_readable(begins), Persistence.time_readable(ends)))
   @staticmethod
+  def save_fail(when):
+    with open(dataroot + "fail.csv", "a+") as fail_file:
+      fail_file.write(Persistence.time_readable(when) + '\n')
+  @staticmethod
   def time_readable(a_time): # ISO 8601 format, YYYY-MM-DD for date formatting
     return time.strftime('%Y-%m-%d %H:%M:%S', a_time)
-  @staticmethod
-  def interpret_time(a_text):
-    return time.strptime(a_text, '%Y-%m-%d %H:%M:%S')
 
 class UX:
   @staticmethod
@@ -63,12 +64,14 @@ def timer(what, secs = 25 * 60):
 
 def on(what = "Unknown"):
   while Processes.any():
-    Processes.kill()
+    fail
   os.system("pymodoro timer \"" + what + "\"&")
   print("It's up to you now for the next X mins...")
 
 def fail():
-  pass
+  Processes.kill()
+  Persistence.save_fail(time.gmtime())
+  print("Auch!")
 
 def reflect():
   print("Reflect: Not implemented")
