@@ -61,7 +61,7 @@ def timer(what, secs = 25 * 60):
   Timer(callback, 5)
   Persistence.save(what, begins, time.gmtime())
 
-def do(what = "Unknown"):
+def on(what = "Unknown"):
   while Processes.any():
     Processes.kill()
   os.system("pymodoro timer \"" + what + "\"&")
@@ -77,8 +77,8 @@ def error():
   print("Error")
 
 if __name__ == "__main__":
-  if (sys.argv[1] == "do"):
-    do(sys.argv[2]) if len(sys.argv) else do()
+  if (sys.argv[1] == "on"):
+    on(sys.argv[2]) if len(sys.argv) else on()
   elif (sys.argv[1] == "timer"):
     timer(sys.argv[2])
   elif (sys.argv[1] == "fail"):
