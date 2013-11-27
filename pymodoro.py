@@ -40,7 +40,7 @@ class Persistence:
 class UX:
   @staticmethod
   def ring_bell():
-    os.system("aplay ~/hibai/bell2.wav 2> /dev/null&")
+    os.system("aplay ~/.config/pymodoro/alarm1.wav 2> /dev/null&")
   @staticmethod
   def show_notification(what):
     Notify.init("Summary-Body")
