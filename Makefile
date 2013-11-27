@@ -14,7 +14,6 @@ install:
 	@cp -n config.json $(LOCAL_DATA_DIR)/
 	@touch $(LOCAL_DATA_DIR)/history.csv
 	@touch $(LOCAL_DATA_DIR)/fail.csv
-	@touch $(LOCAL_DATA_DIR)/now.csv
 
 test:
 	@behave

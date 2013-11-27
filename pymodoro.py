@@ -2,15 +2,53 @@
 # -*- coding: utf-8 -*-
 from os.path import expanduser
 import sys, time, csv, os
-from time import gmtime
 
 # ISO 8601 format that uses YYYY-MM-DD for date formatting
 
 # Data files
 dataroot = expanduser("~") + "/.config/pymodoro/"
 
-def dummy(x, y):
-  return x + y
+
+class Activity:
+  def __init__(self, what="Unknown", begins=None, ends=None):
+    self.what, self.begins, self.ends = what, begins, ends
+  def __repr__(self):
+    return self.what + " / " + str(self.begins) + " / " + str(self.ends)
+  def saveToDisk(self, where = dataroot + "now.csv"):
+    with open(where, "w+") as nowFile:
+      out = csv.writer(nowFile, delimiter = ',', quoting = csv.QUOTE_ALL)
+      out.writerow((self.what, time.strftime('%Y-%m-%d %H:%M:%S', self.begins), time.strftime('%Y-%m-%d %H:%M:%S', self.ends)))
+  @classmethod
+  def loadFromDisk(cls):
+    return cls("Me")
+
+
+class Timer:
+  def __init__(self, callback, secs, noise = None):
+    self.callback, self.secs, self.noise = callback, secs, noise
+    self.busy_wait()
+  def busy_wait(self):
+    time.sleep(self.secs)
+    self.result = self.callback()
+
+class Persistence:
+  @staticmethod
+  def save(what, begins, ends):
+    with open(dataroot + "history.csv", "a+") as history_file:
+      out = csv.writer(history_file, delimiter = ',', quoting = csv.QUOTE_ALL)
+      out.writerow((what, Persistence.time_readable(begins), Persistence.time_readable(ends)))
+  @staticmethod
+  def time_readable(a_time):
+    return time.strftime('%Y-%m-%d %H:%M:%S', a_time)
+  @staticmethod
+  def interpret_time(a_text):
+    return time.strptime(a_text, '%Y-%m-%d %H:%M:%S')
+
+def timer(what = "Unknown", secs = 25 * 60):
+  begins = time.gmtime()
+  Timer(playSoundBackground, 1)
+  Persistence.save(what, begins, time.gmtime())
+
 
 def writeDateTime(a_time):
   return time.strftime('%Y-%m-%d %H:%M:%S', a_time)
@@ -21,7 +59,7 @@ def readDateTime(a_text):
 def rememberTask(text):
   with open(dataroot + "now.csv", "w+") as nowFile:
     out = csv.writer(nowFile, delimiter = ',', quoting = csv.QUOTE_ALL)
-    out.writerow((writeDateTime(gmtime()), text))
+    out.writerow((writeDateTime(time.gmtime()), text))
 
 def getCurrent():
   task = ""
@@ -50,7 +88,7 @@ def do(text):
 def fail():
   task = {}
   task['from'], task['what'] = getCurrent()
-  task['to'] = gmtime()
+  task['to'] = time.gmtime()
   print("Auch! Failed while: " + task['what'])
   saveLog(task, dataroot + "fail.csv")
 
@@ -58,7 +96,7 @@ def alarm(what):
   playSoundBackground()
   task = {}
   task['from'], task['what'] = getCurrent()
-  task['to'] = gmtime()
+  task['to'] = time.gmtime()
   if (task['what'] == what):
     playSoundBackground()
     saveLog(task, dataroot + "tasks.csv")
@@ -76,8 +114,8 @@ def main():
     fail()
   elif (sys.argv[1] == "alarm"):
     alarm()
-  elif (sys.argv[1] == "reflect"):
-    reflect()
+  elif (sys.argv[1] == "timer"):
+    timer()
 
 if __name__ == "__main__":
   main()
