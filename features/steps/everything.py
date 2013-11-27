@@ -9,7 +9,7 @@ def step_impl(context):
   def my_callback():
     return 43
   context.callback = my_callback
-  context.secs_to_wait = 3
+  context.secs_to_wait = 2
   context.start_time = time.time()
 
 @when(u'I set a timer')
