@@ -16,21 +16,17 @@ class Conf:
       self.timeout_sound = None if (self.timeout_sound == "") else Conf.DATAROOT + self.timeout_sound
 
 class Proc:
-  CMD_GET_PID = "ps -ef | grep $USER | grep 'pymodoro timer' | grep -v grep | awk '{print $2}'"
-  CMD_KILL = "ps -ef | grep $USER | grep 'pymodoro timer' | grep -v grep | awk '{print $2}' | xargs kill"
-  CMD_KILL_AUDIO = "ps -ef | grep $USER | grep 'mpg123' | grep -v grep | awk '{print $2}' | xargs kill"
   def __init__(self):
     pass
-  def kill(self):
-    os.system(Proc.CMD_KILL)
-  def kill_audio(self):
-    os.system(Proc.CMD_KILL_AUDIO)
-  def get_pid(self):
-    p = subprocess.Popen(Proc.CMD_GET_PID, shell=True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+  def kill(self, pid):
+    if (pid != ''): os.system('kill ' + pid)
+  def get_pid(self, target):
+    p = subprocess.Popen("ps -ef | grep $USER | grep '" + target + "' | grep -v grep | awk '{print $2}'",
+                         shell=True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
     out, err = p.communicate()
     return out
   def any(self):
-    return self.get_pid() != ""
+    return self.get_pid('pymodoro timer') != ""
 
 class Persistence:
   def __init__(self, conf):
@@ -51,21 +47,17 @@ class UX:
     Notify.init('Summary-Body')
     Notify.Notification.new('Pomodoro elapsed', 'while working on ' + what, '').show()
   @staticmethod
-  def play_audio(file, background = True, secs = None):
-    if (file == None):
-      return
-    if (file.find("wav") > 0):
-      if background:
-        os.system('aplay ' + file + ' 2> /dev/null&')
-      else:
-        os.system('aplay ' + file + ' -d ' + str(secs) + '2> /dev/null&')
-    elif (file.find("mp3") > 0):
-      if background:
-        os.system('mpg123 ' + file + ' > /dev/null&')
-      else:
-        p = subprocess.Popen(['mpg123', file], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-        time.sleep(secs)
-        p.kill()
+  def play_audio(audio_file, background = True, secs = None):
+    if audio_file:
+      if 'wav' in audio_file.lower():
+        if background: os.system('aplay ' + audio_file + ' 2> /dev/null&')
+        else: os.system('aplay ' + audio_file + ' -d ' + str(secs) + '2> /dev/null&')
+      elif 'mp3' in audio_file.lower():
+        if background: os.system('mpg123 ' + audio_file + ' > /dev/null&')
+        else:
+          p = subprocess.Popen(['mpg123', audio_file], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+          time.sleep(secs)
+          p.kill()
 
 class Timer:
   def __init__(self, callback, secs, noise = None):
@@ -77,7 +69,6 @@ class Timer:
     else:
       time.sleep(self.secs)
     self.result = self.callback()
-
 
 # *** Functionality ***
 
@@ -98,8 +89,8 @@ def on(conf, persistence, proc, what = "Unknown"):
 
 def fail(persistence, proc):
   persistence.save_fail(time.gmtime())
-  proc.kill()
-  proc.kill_audio()
+  proc.kill(proc.get_pid('pymodoro timer'))
+  proc.kill(proc.get_pid('mpg123')) # Kill noise
   print("Auch!")
 
 def reflect(persistence):
