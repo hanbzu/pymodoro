@@ -2,39 +2,39 @@
 # -*- coding: utf-8 -*-
 from os.path import expanduser
 from gi.repository import Notify
-import sys, time, csv, os, subprocess
+import sys, time, csv, os, subprocess, json
 
+class Conf:
+  DATAROOT = expanduser("~") + "/.config/pymodoro/"
+  def __init__(self):
+    self.history_file = Conf.DATAROOT + 'history.csv'
+    self.fail_file = Conf.DATAROOT + 'fail.csv'
 
-# Data files
-dataroot = expanduser("~") + "/.config/pymodoro/"
-
-class Processes:
-  kill_cmd = "ps -ef | grep $USER | grep 'pymodoro timer' | grep -v grep | awk '{print $2}' | xargs kill"
-  get_pid_cmd = "ps -ef | grep $USER | grep 'pymodoro timer' | grep -v grep | awk '{print $2}'"
-  @staticmethod
-  def kill():
-    os.system(Processes.kill_cmd)
-  @staticmethod
-  def get_pid():
-    p = subprocess.Popen(Processes.get_pid_cmd, shell=True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+class Proc:
+  CMD_KILL = "ps -ef | grep $USER | grep 'pymodoro timer' | grep -v grep | awk '{print $2}' | xargs kill"
+  CMD_GET_PID = "ps -ef | grep $USER | grep 'pymodoro timer' | grep -v grep | awk '{print $2}'"
+  def __init__(self):
+    pass
+  def kill(self):
+    os.system(Proc.CMD_KILL)
+  def get_pid(self):
+    p = subprocess.Popen(Proc.CMD_GET_PID, shell=True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
     out, err = p.communicate()
     return out
-  @staticmethod
-  def any():
-    return Processes.get_pid() != ""
+  def any(self):
+    return self.get_pid() != ""
 
 class Persistence:
-  @staticmethod
-  def save(what, begins, ends):
-    with open(dataroot + "history.csv", "a+") as history_file:
+  def __init__(self, conf):
+    self.conf = conf
+  def save(self, what, begins, ends):
+    with open(self.conf.history_file, "a+") as history_file:
       out = csv.writer(history_file, delimiter = ',', quoting = csv.QUOTE_ALL)
-      out.writerow((what, Persistence.time_readable(begins), Persistence.time_readable(ends)))
-  @staticmethod
-  def save_fail(when):
-    with open(dataroot + "fail.csv", "a+") as fail_file:
-      fail_file.write(Persistence.time_readable(when) + '\n')
-  @staticmethod
-  def time_readable(a_time): # ISO 8601 format, YYYY-MM-DD for date formatting
+      out.writerow((what, self.time_readable(begins), self.time_readable(ends)))
+  def save_fail(self, when):
+    with open(self.conf.fail_file, "a+") as fail_file:
+      fail_file.write(self.time_readable(when) + '\n')
+  def time_readable(self, a_time): # ISO 8601 format, YYYY-MM-DD for date formatting
     return time.strftime('%Y-%m-%d %H:%M:%S', a_time)
 
 class UX:
@@ -54,37 +54,49 @@ class Timer:
     time.sleep(self.secs)
     self.result = self.callback()
 
-def timer(what, secs = 25 * 60):
+
+# *** Functionality ***
+
+def timer(persistence, what, secs = 25 * 60):
   def callback():
     UX.ring_bell()
     UX.show_notification(what)
   begins = time.gmtime()
   Timer(callback, 5)
-  Persistence.save(what, begins, time.gmtime())
+  persistence.save(what, begins, time.gmtime())
 
-def on(what = "Unknown"):
-  while Processes.any():
-    fail
+def on(persistence, proc, what = "Unknown"):
+  while proc.any():
+    fail(persistence)
   os.system("pymodoro timer \"" + what + "\"&")
   print("It's up to you now for the next X mins...")
 
-def fail():
-  Processes.kill()
-  Persistence.save_fail(time.gmtime())
+def fail(persistence, proc):
+  proc.kill()
+  persistence.save_fail(time.gmtime())
   print("Auch!")
 
-def reflect():
+def reflect(persistence):
   print("Reflect: Not implemented")
 
-def error():
-  print("Error")
 
 if __name__ == "__main__":
-  if (sys.argv[1] == "on"):
-    on(sys.argv[2]) if len(sys.argv) else on()
+
+  # Toolset
+  conf = Conf()
+  prst = Persistence(conf)
+  proc = Proc()
+
+  # Routing
+  if len(sys.argv) == 1:
+    on(prst, proc)
+  elif (sys.argv[1] == "on"):
+    on(prst, proc, sys.argv[2]) if len(sys.argv) == 3 else on(prst, proc)
   elif (sys.argv[1] == "timer"):
-    timer(sys.argv[2])
+    timer(prst, sys.argv[2])
   elif (sys.argv[1] == "fail"):
-    fail()
+    fail(prst, proc)
+  elif (sys.argv[1] == "reflect"):
+    reflect(prst)
   else:
-    error()
+    print("pymodoro on|fail|reflect [task]")
