@@ -2,21 +2,29 @@
 # -*- coding: utf-8 -*-
 from os.path import expanduser
 from gi.repository import Notify
-import sys, time, csv, os, subprocess, json
+import sys, time, datetime, csv, os, subprocess, json
 
 class Conf:
   DATAROOT = expanduser("~") + "/.config/pymodoro/"
   def __init__(self):
     self.history_file = Conf.DATAROOT + 'history.csv'
     self.fail_file = Conf.DATAROOT + 'fail.csv'
+    with open(Conf.DATAROOT + 'config.json') as config:
+      j = json.load(config)
+      self.pomodoro_mins, self.timeout_sound, self.noise = j['pomodoro_mins'], j['timeout_sound'], j['noise']
+      self.noise = None if (self.noise == "") else Conf.DATAROOT + self.noise
+      self.timeout_sound = None if (self.timeout_sound == "") else Conf.DATAROOT + self.timeout_sound
 
 class Proc:
-  CMD_KILL = "ps -ef | grep $USER | grep 'pymodoro timer' | grep -v grep | awk '{print $2}' | xargs kill"
   CMD_GET_PID = "ps -ef | grep $USER | grep 'pymodoro timer' | grep -v grep | awk '{print $2}'"
+  CMD_KILL = "ps -ef | grep $USER | grep 'pymodoro timer' | grep -v grep | awk '{print $2}' | xargs kill"
+  CMD_KILL_AUDIO = "ps -ef | grep $USER | grep 'mpg123' | grep -v grep | awk '{print $2}' | xargs kill"
   def __init__(self):
     pass
   def kill(self):
     os.system(Proc.CMD_KILL)
+  def kill_audio(self):
+    os.system(Proc.CMD_KILL_AUDIO)
   def get_pid(self):
     p = subprocess.Popen(Proc.CMD_GET_PID, shell=True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
     out, err = p.communicate()
@@ -39,41 +47,59 @@ class Persistence:
 
 class UX:
   @staticmethod
-  def ring_bell():
-    os.system("aplay ~/.config/pymodoro/alarm1.wav 2> /dev/null&")
-  @staticmethod
   def show_notification(what):
-    Notify.init("Summary-Body")
-    Notify.Notification.new("Pomodoro elapsed", "while working on " + what, "").show()
+    Notify.init('Summary-Body')
+    Notify.Notification.new('Pomodoro elapsed', 'while working on ' + what, '').show()
+  @staticmethod
+  def play_audio(file, background = True, secs = None):
+    if (file == None):
+      return
+    if (file.find("wav") > 0):
+      if background:
+        os.system('aplay ' + file + ' 2> /dev/null&')
+      else:
+        os.system('aplay ' + file + ' -d ' + str(secs) + '2> /dev/null&')
+    elif (file.find("mp3") > 0):
+      if background:
+        os.system('mpg123 ' + file + ' > /dev/null&')
+      else:
+        p = subprocess.Popen(['mpg123', file], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+        time.sleep(secs)
+        p.kill()
 
 class Timer:
   def __init__(self, callback, secs, noise = None):
     self.callback, self.secs, self.noise = callback, secs, noise
     self.busy_wait()
   def busy_wait(self):
-    time.sleep(self.secs)
+    if (self.noise):
+      UX.play_audio(self.noise, background = False, secs = self.secs)
+    else:
+      time.sleep(self.secs)
     self.result = self.callback()
 
 
 # *** Functionality ***
 
-def timer(persistence, what, secs = 25 * 60):
+def timer(conf, persistence, what, secs):
   def callback():
-    UX.ring_bell()
+    UX.play_audio(conf.timeout_sound)
     UX.show_notification(what)
   begins = time.gmtime()
-  Timer(callback, 5)
+  Timer(callback, secs, conf.noise)
   persistence.save(what, begins, time.gmtime())
 
-def on(persistence, proc, what = "Unknown"):
+def on(conf, persistence, proc, what = "Unknown"):
   while proc.any():
-    fail(persistence)
-  os.system("pymodoro timer \"" + what + "\"&")
-  print("It's up to you now for the next X mins...")
+    fail(persistence, proc)
+  os.system('pymodoro timer \"' + what + '\" ' + str(conf.pomodoro_mins * 60) + ' &')
+  end_time = (datetime.datetime.now() + datetime.timedelta(minutes = conf.pomodoro_mins)).strftime('%H:%M')
+  print("I'll tap you on the shoulder in " + str(conf.pomodoro_mins) + " mins (" + end_time + ")")
 
 def fail(persistence, proc):
-  proc.kill()
   persistence.save_fail(time.gmtime())
+  proc.kill()
+  proc.kill_audio()
   print("Auch!")
 
 def reflect(persistence):
@@ -84,19 +110,19 @@ if __name__ == "__main__":
 
   # Toolset
   conf = Conf()
-  prst = Persistence(conf)
+  persistence = Persistence(conf)
   proc = Proc()
 
   # Routing
   if len(sys.argv) == 1:
-    on(prst, proc)
+    on(conf, persistence, proc)
   elif (sys.argv[1] == "on"):
-    on(prst, proc, sys.argv[2]) if len(sys.argv) == 3 else on(prst, proc)
+    on(conf, persistence, proc, sys.argv[2]) if len(sys.argv) == 3 else on(conf, persistence, proc)
   elif (sys.argv[1] == "timer"):
-    timer(prst, sys.argv[2])
+    timer(conf, persistence, sys.argv[2], int(sys.argv[3]))
   elif (sys.argv[1] == "fail"):
-    fail(prst, proc)
+    fail(persistence, proc)
   elif (sys.argv[1] == "reflect"):
-    reflect(prst)
+    reflect(persistence)
   else:
     print("pymodoro on|fail|reflect [task]")
