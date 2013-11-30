@@ -70,6 +70,22 @@ class Timer:
       time.sleep(self.secs)
     self.result = self.callback()
 
+class Chart:
+  BLOCKS = u'▁▂▃▄▅▆▇██'
+  @staticmethod
+  def spark(data, line = '', lo = None, hi = None):
+    if lo == None:
+      lo = float(min(data))
+    else:
+      data = [lo if (d < lo) else d for d in data]
+    if hi == None:
+      hi = float(max(data))
+    else:
+      data = [hi if (d > hi) else d for d in data]
+    incr = (hi - lo) / 8
+    return ''.join([Chart.BLOCKS[int((float(n) - lo) / incr)] for n in data])   
+
+
 # *** Functionality ***
 
 def timer(conf, persistence, what, secs):
