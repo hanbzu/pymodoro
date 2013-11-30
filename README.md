@@ -3,11 +3,21 @@ PyModoro
 
 Pymodoro is a highly opinionated script that helps you break down your work into small 25 minute bits or [pomodoros](http://pomodorotechnique.com/) and record your time usage automatically. This way you can focus on your task while you are doing it and leave Pymodoro do the logging and visualising work.
 
+
+### Installation
+
+You can start using it with:
+
+    make install
+
+It will copy Pymodoro to `/usr/local/bin` and program data to `~/.config/pymodoro`. 
+
+
 ### Workflow
 
 If you know what you'll be workig on next, just type
 
-    pymodoro on "Paper prototyping"
+    pymodoro on 'Paper prototyping'
 
 That's all. You have nothing else but your work to focus on now. And whatever you happen to think about doing just remember you have to complete the 25 minute pomodoro. Interruptions are not allowed, just work on what you wanted to work on. You'll be notified with a desktop notification (on Linux) and an audible alarm sound when the 25 minutes are gone.
 
@@ -19,23 +29,21 @@ Should you be interrupted, you can log interruptions for later introspection:
 
 Remember, after each 25 minute pomodoro you need to take a 3-5 minute short break. You don't need an application for that. Just stand up, do some stretches or prepare some coffee, or call someone, or write some short email, etc. Sometimes you may thing that this is unnecessary. It isn't. Sometimes, when your into a hard pomodoro, you'll need to know that some fun or rest comes after the minutes left.
 
-Finally, remember that this workflow is not suitable for everything. Sometimes you need to talk without thinking about the time, you need to get lost in time. You may also need habits, rituals, spare time. Your work shouldn't interrupt your habits, your habits shouldn't interrupt your work. Keep each of them where they belong.
+Whenever you want to reflect on your work, you can find how many pomodoros you worked on a day or how many pomodoros were spent on the same activity by having a look at the history file:
+
+    less ~/.config/pymodoro/history.csv
 
 
-### Installation
+### Disclaimer
 
-You can start using typing
-
-    make install
-
-It will copy Pymodoro to `/usr/local/bin` and program data to `~/.config/pymodoro`. 
+This workflow is not suitable for everything. Sometimes you need to talk without thinking about the time, you need to get lost in time. You may also need habits, rituals, spare time. Your work shouldn't interrupt your habits, your habits shouldn't interrupt your work. Keep each of them where they belong.
 
 
-### Recording
+### Future development notes
 
+#### Recording
 
-
-#### Activity history
+##### Activity history
 
 * from, to, [what]
 * from and to are date-times
@@ -43,8 +51,7 @@ It will copy Pymodoro to `/usr/local/bin` and program data to `~/.config/pymodor
 * The line means: what is being done from from to to
 * Lines are never removed
 
-
-#### Interruption log
+##### Interruption log
 
 * from, to, [what]
 * from and to are date-times
@@ -53,9 +60,7 @@ It will copy Pymodoro to `/usr/local/bin` and program data to `~/.config/pymodor
 * Lines are never removed
 
 
-### Reflection: what to show?
-
-Currently the reflection feature is not implemented. I include here some ideas that could be added to Pymodoro for reflection on your work.
+#### Reflection: what to show?
 
 Proposals:
 * Reflection changes depending on time of the day. Before going to bed: About tomorrow (too much stress?)
@@ -70,7 +75,7 @@ It's coming
 * Most relevant deadlines
 * Relevant depends on time left and difficulty
 
-#### Things to do. Tasks?
+##### Things to do. Tasks?
 
 * task, [parent_task], [size], [done]
 * a tree structure for organising tasks
@@ -79,16 +84,14 @@ It's coming
 * done is also optional, done tasks are kept for reference
 
 
-
-### Agenda: how to organise?
+#### Agenda: how to organise?
 
 * Booooh things scheduled for today (those with start and end date)
 * Free time today
 * Available time for work today
 * Available time for work next X days
 
-
-#### Plan
+##### Plan
 
 * [after], [before], what
 * what can be a task, or something else
@@ -97,8 +100,7 @@ It's coming
 * if there's only before, thats a deadline, deadlines are coming
 * if there's box, some fixed thing ahead. Maybe a meeting. Boooh.
 
-
-#### Habits
+##### Habits
 
 * from, to, periodicity, what, [similar_thing]
 * what is never a task here
