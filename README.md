@@ -8,6 +8,8 @@ Pymodoro is a highly opinionated script that helps you break down your work into
 
 You can start using it with:
 
+    git clone https://github.com/hanbzu/pymodoro.git
+    cd pymodoro
     make install
 
 It will copy Pymodoro to `/usr/local/bin` and program data to `~/.config/pymodoro`. 
