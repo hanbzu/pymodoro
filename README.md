@@ -33,8 +33,15 @@ Remember, after each 25 minute pomodoro you need to take a 3-5 minute short brea
 
 Whenever you want to reflect on your work, you can find how many pomodoros you worked on a day or how many pomodoros were spent on the same activity by having a look at the history file:
 
+    pymodoro reflect
+
+This feature is under development, so the reflection data provided can change or grow in the future. Don't hesitate to post any suggestions.
+
+If that's not enough for you, your whole history is saved in the history file. You can have a look by typing
+
     less ~/.config/pymodoro/history.csv
 
+But be careful, times are in UTC.
 
 ### Disclaimer
 
