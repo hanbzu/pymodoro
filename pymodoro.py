@@ -134,13 +134,12 @@ class Zeitgeist:
       pomodoros_by_day[day] = len(by_day[day])
     return pomodoros_by_day
   @staticmethod
-  def punchcard_list(persistence):
-    pomodoros = Zeitgeist.daily_pomodoros(persistence)
-    how_many_days = len(pomodoros.keys())
+  def punchcard_list(persistence, how_many_days):
     days = [datetime.date.today() - datetime.timedelta(days = d) for d in range(0, how_many_days - 1)]
     reversed_days = days[::-1]
     day_keys = [day.strftime('%Y-%m-%d') for day in reversed_days]
     punchcard = []
+    pomodoros = Zeitgeist.daily_pomodoros(persistence)
     for day in day_keys:
       if day in pomodoros: punchcard.append(pomodoros[day])
       else: punchcard.append(0)
@@ -175,8 +174,8 @@ def reflect(persistence):
   print(UX.DIM_GREEN + "Most common terms are" + UX.ENDC)
   print(', '.join(Zeitgeist.most_common(persistence, 3)))
   print(UX.DIM_GREEN + "Punchcard" + UX.ENDC)
-  punchcard = Zeitgeist.punchcard_list(persistence)
-  print(Chart.spark(punchcard[-30:]) + " today " + str(punchcard[-1]))
+  punchcard = Zeitgeist.punchcard_list(persistence, 30)
+  print(Chart.spark(punchcard) + " today " + str(punchcard[-1]))
   print("Average is " + str(sum(punchcard) / len(punchcard)) + " with maximum at " + str(max(punchcard)))
 
 if __name__ == "__main__":
