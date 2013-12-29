@@ -87,7 +87,7 @@ class Timer:
     self.result = self.callback()
 
 class Chart:
-  BLOCKS = u' ▁▂▃▄▅▆▇██'
+  BLOCKS = u'▁▂▃▄▅▆▇██'
   @staticmethod
   def spark(data, line = '', lo = None, hi = None):
     if lo == None:
@@ -98,7 +98,7 @@ class Chart:
       hi = float(max(data))
     else:
       data = [hi if (d > hi) else d for d in data]
-    incr = (hi - lo) / 9
+    incr = (hi - lo) / 8
     return ''.join([Chart.BLOCKS[int((float(n) - lo) / incr)] for n in data])   
 
 class Zeitgeist:
