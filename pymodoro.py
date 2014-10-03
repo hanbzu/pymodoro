@@ -66,10 +66,10 @@ class UX:
   def play_audio(audio_file, background = True, secs = None):
     if audio_file:
       if 'wav' in audio_file.lower():
-        if background: os.system('aplay ' + audio_file + ' 2> /dev/null&')
-        else: os.system('aplay ' + audio_file + ' -d ' + str(secs) + '2> /dev/null&')
+        if background: os.system('aplay ' + audio_file + ' > /dev/null 2>&1 &')
+        else: os.system('aplay ' + audio_file + ' -d ' + str(secs) + '  > /dev/null 2>&1')
       elif 'mp3' in audio_file.lower():
-        if background: os.system('mpg123 ' + audio_file + ' > /dev/null&')
+        if background: os.system('mpg123 ' + audio_file + ' > /dev/null 2>&1 &')
         else:
           p = subprocess.Popen(['mpg123', audio_file], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
           time.sleep(secs)
