@@ -1,7 +1,7 @@
 PyModoro
 ========
 
-Pymodoro is a highly opinionated script that helps you break down your work into small 25 minute bits or [pomodoros](http://pomodorotechnique.com/) and record your time usage automatically. This way you can focus on your task while you are doing it and leave Pymodoro do the logging and visualising work.
+Pymodoro is a highly opinionated console app that helps you break down your work into small 25 minute bits or [pomodoros](http://pomodorotechnique.com/) and record your time usage automatically. This way you can focus on your task while you are doing it and leave Pymodoro do the logging and visualising work.
 
 
 ### Installation
@@ -12,7 +12,7 @@ You can start using it with:
     cd pymodoro
     make install
 
-It will copy Pymodoro to `/usr/local/bin` and program data to `~/.config/pymodoro`. 
+It will copy Pymodoro to `/usr/local/bin` and program data to `~/.config/pymodoro`.
 
 
 ### Workflow
