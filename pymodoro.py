@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from os.path import expanduser
-from gi.repository import Notify
 from dateutil import tz
 import sys, time, datetime, csv, os, subprocess, json
 
@@ -60,8 +59,9 @@ class UX:
     return utc_time.replace(tzinfo = tz.tzutc()).astimezone(tz.tzlocal()).strftime(format)
   @staticmethod
   def show_notification(what):
-    Notify.init('Summary-Body')
-    Notify.Notification.new('Pomodoro elapsed', 'while working on ' + what, '').show()
+    os.system("""
+              osascript -e 'display notification "{}" with title "{}"'
+              """.format('while working on ' + what, 'Pomodoro elapsed'))
   @staticmethod
   def play_audio(audio_file, background = True, secs = None):
     if audio_file:
@@ -99,7 +99,7 @@ class Chart:
     else:
       data = [hi if (d > hi) else d for d in data]
     incr = (hi - lo) / 8
-    return ''.join([Chart.BLOCKS[int((float(n) - lo) / incr)] for n in data])   
+    return ''.join([Chart.BLOCKS[int((float(n) - lo) / incr)] for n in data])
 
 class Zeitgeist:
   @staticmethod
